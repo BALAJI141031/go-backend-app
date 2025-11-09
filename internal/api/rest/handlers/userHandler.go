@@ -2,6 +2,8 @@ package handlers
 
 import (
 	"backend-app/internal/api/rest"
+	"backend-app/internal/dto"
+	"backend-app/internal/service"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -9,19 +11,20 @@ import (
 
 type UserHandler struct {
 	// user service
-
+	userService service.UserService
 }
 
 func SetupUserRoutes(httpHandler *rest.HttpHandler) {
 
-	userHandler := UserHandler{}
+	userService := service.UserService{}
+	userHandler := UserHandler{userService: userService}
 
 	// httpHandler.Router.GET("/users", getAllUsers)
 	httpHandler.Router.POST("/register", userHandler.Register)
 	httpHandler.Router.POST("user/login", userHandler.Login)
 
-	httpHandler.Router.GET("verifyCode", userHandler.GetVerifyCode)
-	httpHandler.Router.POST("verifyCode", userHandler.VerifyCode)
+	httpHandler.Router.GET("verificationCode", userHandler.GetVerificationCode)
+	httpHandler.Router.POST("verificationCode", userHandler.VerifyCode)
 	httpHandler.Router.GET("user/profile", userHandler.Profile)
 
 	httpHandler.Router.POST("cart", userHandler.AddToCart)
@@ -30,15 +33,29 @@ func SetupUserRoutes(httpHandler *rest.HttpHandler) {
 }
 
 func (userHandler *UserHandler) Register(c *gin.Context) {
-	c.JSON(http.StatusOK, gin.H{"message": "User is Registered"})
+	userDto := dto.UserSignupRequestDto{}
+	err := c.ShouldBindJSON(&userDto)
+
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	token, err := userHandler.userService.SignupUser(userDto)
+
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "User is Registered", "token": token})
 }
 
 func (UserHandler *UserHandler) Login(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"message": "User is Logged In"})
 }
 
-func (userHandler *UserHandler) GetVerifyCode(c *gin.Context) {
-	c.JSON(http.StatusOK, gin.H{"message": "Get Verify Code"})
+func (userHandler *UserHandler) GetVerificationCode(c *gin.Context) {
+	c.JSON(http.StatusOK, gin.H{"message": "Get Verification Code"})
 }
 
 func (userHandler *UserHandler) VerifyCode(c *gin.Context) {
