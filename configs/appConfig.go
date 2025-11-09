@@ -10,6 +10,7 @@ import (
 
 type AppConfig struct {
 	ServerPort string
+	Dsn        string
 }
 
 func SetupEnv() (config AppConfig, err error) {
@@ -20,10 +21,16 @@ func SetupEnv() (config AppConfig, err error) {
 	}
 
 	httpPort := os.Getenv("HTTP_PORT")
+	dsn := os.Getenv("DATABASE_URL")
+
 	if httpPort == "" {
 		return AppConfig{}, errors.New("HTTP_PORT not set in environment variables")
 	}
 
+	if dsn == "" {
+		return AppConfig{}, errors.New("DATABASE_URL not set in environment variables")
+	}
+
 	fmt.Println("Configuration loaded: ", httpPort)
-	return AppConfig{ServerPort: httpPort}, nil
+	return AppConfig{ServerPort: httpPort, Dsn: dsn}, nil
 }

@@ -3,14 +3,16 @@ package domain
 import "time"
 
 type User struct {
-	ID        uint      `json:"id"`
+	ID        uint      `json:"id" gorrm:"PrimaryKey"`
 	FirstName string    `json:"first_name"`
 	LastName  string    `json:"last_name"`
-	Email     string    `json:"email"`
+	Email     string    `json:"email" gorm:"unique;not null;index"`
 	Phone     string    `json:"phone"`
 	Password  string    `json:"password"`
 	Code      int       `json:"code"`
 	Expiry    time.Time `json:"expiry"`
-	Verified  bool      `json:"verified"`
-	UserType  string    `json:"user_type"`
+	Verified  bool      `json:"verified" gorm:"default:false"`
+	UserType  string    `json:"user_type" gorm:"default:user"`
+	CreatedAt time.Time `json:"created_at" gorm:"autoCreateTime"`
+	UpdatedAt time.Time `json:"updated_at" gorm:"autoUpdateTime"`
 }
